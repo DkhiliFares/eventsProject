@@ -8,6 +8,7 @@ class EventsProjectApplicationTests {
 
     @Test
     void contextLoads() {
+        // Test minimal pour éviter les erreurs de contexte
+        assert (true);
     }
-
 }
