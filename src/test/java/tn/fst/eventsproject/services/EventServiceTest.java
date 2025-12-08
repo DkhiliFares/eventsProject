@@ -1,14 +1,12 @@
 package tn.fst.eventsproject.services;
 
-import tn.fst.eventsproject.entities.Event;
-import tn.fst.eventsproject.repositories.EventRepository;
+import tn.fst.eventsproject.entities.Participant;
+import tn.fst.eventsproject.repositories.ParticipantRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,35 +16,23 @@ import static org.mockito.Mockito.*;
 class EventServiceTest {
 
     @Mock
-    private EventRepository eventRepository;
+    private ParticipantRepository participantRepository;
 
     @InjectMocks
-    private EventService eventService;
+    private EventServicesImpl eventServices;
 
     @Test
-    void testAddEvent() {
-        Event event = new Event();
-        event.setName("Test Event");
+    void testAddParticipant() {
+        Participant participant = new Participant();
+        participant.setNom("Test Name");
+        participant.setPrenom("Test Surname");
 
-        when(eventRepository.save(any(Event.class))).thenReturn(event);
+        when(participantRepository.save(any(Participant.class))).thenReturn(participant);
 
-        Event result = eventService.addEvent(event);
-
-        assertNotNull(result);
-        assertEquals("Test Event", result.getName());
-        verify(eventRepository, times(1)).save(event);
-    }
-
-    @Test
-    void testFindEventById() {
-        Event event = new Event();
-        event.setId(1L);
-
-        when(eventRepository.findById(1L)).thenReturn(Optional.of(event));
-
-        Event result = eventService.findEventById(1L);
+        Participant result = eventServices.addParticipant(participant);
 
         assertNotNull(result);
-        assertEquals(1L, result.getId());
+        assertEquals("Test Name", result.getNom());
+        verify(participantRepository, times(1)).save(participant);
     }
 }
