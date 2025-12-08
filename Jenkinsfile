@@ -34,8 +34,8 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            agent none
             steps {
+                // Ensure the analysis runs on the same agent and with proper SonarQube env
                 withSonarQubeEnv('SonarQube-Server') {
                     sh """
                         mvn sonar:sonar \
@@ -49,8 +49,12 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                // Increase timeout in case analysis takes longer
+                timeout(time: 20, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate abortPipeline: true
+                        echo "SonarQube Quality Gate status: ${qg.status}"
+                    }
                 }
             }
         }
@@ -69,7 +73,9 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USER')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', 
+                                                 passwordVariable: 'DOCKER_PASSWORD', 
+                                                 usernameVariable: 'DOCKER_USER')]) {
                     sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}"
                     sh "docker push ${DOCKER_IMAGE}"
                     sh "docker push ${IMAGE_NAME}:latest"
@@ -81,6 +87,15 @@ pipeline {
             steps {
                 sh "docker-compose -f docker-compose.yml up -d"
             }
+        }
+    }
+
+    post {
+        failure {
+            echo "Pipeline failed! Check the SonarQube Quality Gate and logs."
+        }
+        success {
+            echo "Pipeline completed successfully."
         }
     }
 }
