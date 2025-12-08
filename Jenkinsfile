@@ -9,7 +9,7 @@ pipeline {
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         NEXUS_CREDENTIALS = credentials('nexus-credentials')
-        SONAR_HOST_URL = 'http://sonarqube:9000'
+        SONAR_HOST_URL = 'http://192.168.20.139:9000'
         IMAGE_NAME = "fares2112/event-app"
         DOCKER_IMAGE = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
     }
@@ -38,8 +38,8 @@ pipeline {
                 withSonarQubeEnv('SonarQube-Server') {
                     sh """
                         mvn sonar:sonar \
-                            -Dsonar.projectKey=eventsProject \
-                            -Dsonar.projectName=eventsProject
+                            -Dsonar.projectKey=eventsproject \
+                            -Dsonar.projectName=eventsproject
                     """
                 }
             }
