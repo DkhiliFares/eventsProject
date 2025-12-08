@@ -36,10 +36,15 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube-Server') {
-                    sh "mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}"
+                    sh """
+                        mvn sonar:sonar \
+                            -Dsonar.projectKey=eventsProject \
+                            -Dsonar.projectName=eventsProject
+                    """
                 }
             }
         }
+
 
         stage('Quality Gate') {
             steps {
