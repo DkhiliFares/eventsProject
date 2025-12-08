@@ -1,5 +1,5 @@
 pipeline {
-    agent {
+    agent { 
         docker {
             image 'maven:3.9.6-eclipse-temurin-17'
             args '-v /root/.m2:/root/.m2'
@@ -40,13 +40,19 @@ pipeline {
                         mvn sonar:sonar \
                             -Dsonar.projectKey=eventsProject \
                             -Dsonar.projectName=eventsProject \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.token=squ_eddcc9f7584a8de781f69cc278271fa9b07c4063
+                            -Dsonar.host.url=${SONAR_HOST_URL}
                     """
                 }
             }
         }
 
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
 
         stage('Artifact Upload to Nexus') {
             steps {
