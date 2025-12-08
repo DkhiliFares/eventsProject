@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'maven:3.8.6-openjdk-17'
+            image 'maven:3.9.6-eclipse-temurin-17'
             args '-v /root/.m2:/root/.m2'
         }
     }
@@ -10,11 +10,12 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         NEXUS_CREDENTIALS = credentials('nexus-credentials')
         SONAR_HOST_URL = 'http://sonarqube:9000'
-        IMAGE_NAME = "ramzi/event-app"
+        IMAGE_NAME = "fares2112/event-app"
         DOCKER_IMAGE = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
     }
 
     stages {
+
         stage('Build') {
             steps {
                 sh 'mvn clean compile'
@@ -56,20 +57,16 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE} -t ${IMAGE_NAME}:latest ."
-                }
+                sh "docker build -t ${DOCKER_IMAGE} -t ${IMAGE_NAME}:latest ."
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USER')]) {
-                        sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}"
-                        sh "docker push ${DOCKER_IMAGE}"
-                        sh "docker push ${IMAGE_NAME}:latest"
-                    }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USER')]) {
+                    sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}"
+                    sh "docker push ${DOCKER_IMAGE}"
+                    sh "docker push ${IMAGE_NAME}:latest"
                 }
             }
         }
