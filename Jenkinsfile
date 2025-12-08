@@ -35,12 +35,9 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube-Server') {
-                    sh """
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=eventsproject \
-                            -Dsonar.projectName=eventsproject
-                    """
+                echo 'code quality analisys : ';
+                sh 'mvn sonar:sonar -Dsonar.token=squ_eddcc9f7584a8de781f69cc278271fa9b07c4063;
+
                 }
             }
         }
