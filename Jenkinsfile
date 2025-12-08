@@ -36,7 +36,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo 'code quality analisys : ';
-                sh 'mvn sonar:sonar -Dsonar.token=squ_eddcc9f7584a8de781f69cc278271fa9b07c4063;
+                sh 'mvn sonar:sonar -Dsonar.token=squ_eddcc9f7584a8de781f69cc278271fa9b07c4063';
 
                 }
             }
