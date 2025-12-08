@@ -35,12 +35,17 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                echo 'code quality analisys : ';
-                sh 'mvn sonar:sonar -Dsonar.token=squ_eddcc9f7584a8de781f69cc278271fa9b07c4063';
-
+                withSonarQubeEnv('SonarQube-Server') {
+                    sh """
+                        mvn sonar:sonar \
+                            -Dsonar.projectKey=eventsProject \
+                            -Dsonar.projectName=eventsProject \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.token=squ_eddcc9f7584a8de781f69cc278271fa9b07c4063
+                    """
                 }
             }
-
+        }
 
         stage('Quality Gate') {
             steps {
