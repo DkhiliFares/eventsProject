@@ -3,7 +3,7 @@ services:
   # 1. Application Spring Boot
   event-app:
     build: .
-    image: event-app:latest
+    image: ramzi/event-app:latest
     ports:
       - "8080:8080"
     environment:

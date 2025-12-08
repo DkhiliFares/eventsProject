@@ -1,12 +1,17 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.8.6-openjdk-17'
+            args '-v /root/.m2:/root/.m2'
+        }
+    }
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
         NEXUS_CREDENTIALS = credentials('nexus-credentials')
         SONAR_HOST_URL = 'http://sonarqube:9000'
-        DOCKER_IMAGE = "ramzi/event-app:${env.BUILD_NUMBER}" 
-        // Note: 'ramzi' is a placeholder, strictly speaking user should configure this.
+        IMAGE_NAME = "ramzi/event-app"
+        DOCKER_IMAGE = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
     }
 
     stages {
@@ -18,13 +23,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh './mvnw clean compile'
+                sh 'mvn clean compile'
             }
         }
 
         stage('Unit Tests') {
             steps {
-                sh './mvnw test'
+                sh 'mvn test'
             }
             post {
                 always {
@@ -36,7 +41,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube-Server') {
-                    sh "./mvnw sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}"
+                    sh "mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_TOKEN}"
                 }
             }
         }
@@ -51,14 +56,14 @@ pipeline {
 
         stage('Artifact Upload to Nexus') {
             steps {
-                sh "./mvnw deploy -DskipTests"
+                sh "mvn deploy -DskipTests"
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    sh "docker build -t ${DOCKER_IMAGE} -t ${IMAGE_NAME}:latest ."
                 }
             }
         }
@@ -69,6 +74,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USER')]) {
                         sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD}"
                         sh "docker push ${DOCKER_IMAGE}"
+                        sh "docker push ${IMAGE_NAME}:latest"
                     }
                 }
             }
