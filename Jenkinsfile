@@ -28,47 +28,38 @@ pipeline {
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/TEST-*.xml'
+                    junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
 
-                    stage('SonarQube Analysis') {
-                steps {
-                    withSonarQubeEnv('sonarqube') {
-                        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
-                            sh """
-                                echo "Starting SonarQube analysis..."
-                                mvn verify sonar:sonar \
-                                    -Dsonar.projectKey=eventsProject \
-                                    -Dsonar.host.url=${SONAR_HOST_URL} \
-                                    -Dsonar.login=${SONAR_TOKEN} \
-                                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
-                                    -B
-                            """
-                        }
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                            mvn verify sonar:sonar \
+                            -Dsonar.projectKey=eventsProject \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=${SONAR_TOKEN} \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                            -B
+                        """
                     }
                 }
             }
+        }
 
-        stage('Wait for Analysis Completion') {
-    steps {
-        echo "Waiting 30 seconds for SonarQube analysis to complete..."
-        sleep 30
-    }
-}
-
-stage('Quality Gate') {
-    steps {
-        timeout(time: 15, unit: 'MINUTES') {
-            script {
-                echo "Checking Quality Gate..."
-                def qg = waitForQualityGate abortPipeline: true
-                echo "Quality Gate status: ${qg.status}"
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    script {
+                        def qg = waitForQualityGate abortPipeline: true
+                        echo "Quality Gate: ${qg.status}"
+                    }
+                }
             }
         }
-    }
-}
 
         stage('Artifact Upload to Nexus') {
             steps {
@@ -102,11 +93,11 @@ stage('Quality Gate') {
     }
 
     post {
-        failure {
-            echo "Pipeline failed! Check the SonarQube Quality Gate and logs."
-        }
         success {
-            echo "Pipeline completed successfully."
+            echo "🎉 PIPELINE FINISHED SUCCESSFULLY 🎉"
+        }
+        failure {
+            echo "❌ Pipeline failed — check logs."
         }
     }
 }
