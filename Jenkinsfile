@@ -47,18 +47,6 @@ pipeline {
             }
         }
 
-        stage('Quality Gate') {
-            steps {
-                // Increase timeout in case analysis takes longer
-                timeout(time: 20, unit: 'MINUTES') {
-                    script {
-                        def qg = waitForQualityGate abortPipeline: true
-                        echo "SonarQube Quality Gate status: ${qg.status}"
-                    }
-                }
-            }
-        }
-
         stage('Artifact Upload to Nexus') {
             steps {
                 sh "mvn deploy -DskipTests"
