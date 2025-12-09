@@ -46,6 +46,24 @@ pipeline {
                 }
             }
         }
+        stage('Wait for Analysis Completion') {
+    steps {
+        echo "Waiting 30 seconds for SonarQube analysis to complete..."
+        sleep 30
+    }
+}
+
+stage('Quality Gate') {
+    steps {
+        timeout(time: 15, unit: 'MINUTES') {
+            script {
+                echo "Checking Quality Gate..."
+                def qg = waitForQualityGate abortPipeline: true
+                echo "Quality Gate status: ${qg.status}"
+            }
+        }
+    }
+}
 
         stage('Artifact Upload to Nexus') {
             steps {
