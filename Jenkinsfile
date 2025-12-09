@@ -40,7 +40,7 @@ pipeline {
                             sh """
                                 echo "Starting SonarQube analysis..."
                                 mvn sonar:sonar \
-                                    -Dsonar.projectKey=eventsproject \
+                                    -Dsonar.projectKey=eventsProject \
                                     -Dsonar.host.url=${SONAR_HOST_URL} \
                                     -Dsonar.login=${SONAR_TOKEN} \
                                     -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
