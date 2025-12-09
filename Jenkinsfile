@@ -33,19 +33,24 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                // Ensure the analysis runs on the same agent and with proper SonarQube env
-                withSonarQubeEnv('SonarQube-Server') {
-                    sh """
-                        mvn sonar:sonar \
-                            -Dsonar.projectKey=eventsProject \
-                            -Dsonar.projectName=eventsProject \
-                            -Dsonar.host.url=${SONAR_HOST_URL}
-                    """
+                    stage('SonarQube Analysis') {
+                steps {
+                    withSonarQubeEnv('sonarqube') {
+                        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
+                            sh """
+                                echo "Starting SonarQube analysis..."
+                                mvn sonar:sonar \
+                                    -Dsonar.projectKey=eventsproject \
+                                    -Dsonar.host.url=${SONAR_HOST_URL} \
+                                    -Dsonar.login=${SONAR_TOKEN} \
+                                    -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                                    -B
+                            """
+                        }
+                    }
                 }
             }
-        }
+
         stage('Wait for Analysis Completion') {
     steps {
         echo "Waiting 30 seconds for SonarQube analysis to complete..."
