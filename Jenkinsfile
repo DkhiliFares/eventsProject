@@ -39,7 +39,7 @@ pipeline {
                         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_TOKEN')]) {
                             sh """
                                 echo "Starting SonarQube analysis..."
-                                mvn sonar:sonar \
+                                mvn verify sonar:sonar \
                                     -Dsonar.projectKey=eventsProject \
                                     -Dsonar.host.url=${SONAR_HOST_URL} \
                                     -Dsonar.login=${SONAR_TOKEN} \
