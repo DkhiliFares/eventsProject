@@ -70,11 +70,28 @@ stage('Quality Gate') {
     }
 }
 
-        stage('Artifact Upload to Nexus') {
-            steps {
-                sh "mvn deploy -DskipTests"
-            }
+stage('Artifact Upload to Nexus') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'nexus-credentials', 
+                                         usernameVariable: 'NEXUS_USR', 
+                                         passwordVariable: 'NEXUS_PSW')]) {
+            sh '''
+                echo "<settings>
+                        <servers>
+                            <server>
+                                <id>nexus</id>
+                                <username>${NEXUS_USR}</username>
+                                <password>${NEXUS_PSW}</password>
+                            </server>
+                        </servers>
+                      </settings>" > settings.xml
+
+                mvn deploy -s settings.xml -DskipTests
+            '''
         }
+    }
+}
+
 
         stage('Build Docker Image') {
             steps {
